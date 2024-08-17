@@ -1,3 +1,4 @@
+import os
 from flask import Flask, request, jsonify
 import mysql.connector
 from mysql.connector import Error
@@ -12,7 +13,7 @@ def get_db_connection():
         host='cheetahdb.cx8yyoqogq59.us-east-1.rds.amazonaws.com',  # e.g., 'RDS Endpoint'
         database='cheetah',  # e.g., 'user_db'
         user='CheetahAI_DB',  # e.g., 'root'
-        password='Mydb08828!',  # your MySQL password
+        password=os.getenv('password'),  # your MySQL password
         autocommit=True
     )
 
