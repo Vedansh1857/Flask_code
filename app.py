@@ -70,10 +70,10 @@ def fetch_user_details():
     except Error as e:
         return jsonify({"status": "error", "message": str(e)}), 500
 
-    finally:
-        if connection.is_connected():
-            cursor.close()
-            connection.close()
+    # finally:
+    #     if connection.is_connected():
+    #         cursor.close()
+    #         connection.close()
 
 
 if __name__ == '__main__':
