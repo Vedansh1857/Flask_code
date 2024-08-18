@@ -1,8 +1,7 @@
 flask
 flask-cors
 mysql-connector-python
-imaplib
-email
+imaplib2
 pdfplumber
 pathlib
 datetime
