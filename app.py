@@ -385,7 +385,6 @@ def index():
         # Measure time for making FAISS index
         start_faiss_time = time.time()
         # print(f"\n The PDF extracted for processing are:")
-        HttpResponse("\n The PDF extracted for processing are:")
         for pdf in pdf_docs:
             print(pdf)
         raw_text = get_pdf_text(pdf_docs)
