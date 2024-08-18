@@ -1,15 +1,3 @@
 flask
 flask-cors
 mysql-connector-python
-imaplib2
-pdfplumber
-pathlib
-datetime
-selenium
-PyPDF2
-langchain
-langchain_google_genai
-google-generativeai
-langchain_community
-python-dotenv
-asyncio
