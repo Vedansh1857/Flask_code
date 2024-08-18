@@ -1,5 +1,5 @@
 import os
-from flask import Flask, request, jsonify
+from flask import Flask, request, jsonify, render_template
 from flask_cors import CORS
 import mysql.connector
 from mysql.connector import Error
@@ -198,7 +198,7 @@ def index():
                     current_date = datetime.now().strftime("%d-%m-%Y")
                     batch_data[field_id] = current_date
                 elif field_id == "Supporting_Documents_Upload":
-                    file_path = Path("Documents/invoice1r.pdf")
+                    file_path = r"D:\flask_code\Documents\invoice1r.pdf"
                     batch_data[field_id] = file_path
                 else:
                     question = generate_question(field_id)
@@ -264,7 +264,7 @@ def index():
         element.clear()
         element.send_keys(answer)
 
-    async def fill_fields_in_batches(elements, batch_size, delay, semaphore):
+    async def fill_fields_in_batches(elements, batch_size, delay, semaphore, msgs):
         next_batch_data_task = None
         excluded_ids = []  # Initialize excluded_ids list
 
@@ -290,6 +290,7 @@ def index():
                     tasks.append(fill_field(element, batch_data[field_id]))
             await asyncio.gather(*tasks)
             await asyncio.sleep(delay)
+        # return render_template("index.html", messages=msgs)
 
     # Function to extract the first thirty characters from PDF using pdfplumber
     def extract_first_twenty_chars_from_pdf(filename):
@@ -335,12 +336,15 @@ def index():
 
     # Search for emails based on criteria
     email_ids = search_emails(mail, search_criteria)
+    msgs = []
     
     if email_ids:
         # Print email IDs and choose one
         print("Email IDs matching the criteria:")
+        msgs.append("Email IDs matching the criteria: ")
         for i, email_id in enumerate(email_ids):
             print(f"{i + 1}: {email_id.decode('utf-8')}")
+            msgs.append(f"{i + 1}: {email_id.decode('utf-8')}")
 
         # Input: Choose email by ID
         chosen_index = len(email_ids) - 1  # Select the last email in the list
@@ -350,7 +354,7 @@ def index():
         msg = fetch_email_by_id(mail, chosen_id)
 
         # Define download folder
-        download_folder = Path("Documents/")
+        download_folder = r"Documents/"
 
         # Download PDF attachments and get their paths
         pdf_paths = download_pdf_attachments(msg, download_folder)
@@ -358,23 +362,25 @@ def index():
         pdf_docs = []
         if pdf_paths:
             print("\nPDF attachments downloaded to:\n")
-            for path in pdf_paths:
-                print(path)
+            for pdfs in pdf_paths:
+                print(pdfs)
 
                 # Extract text from PDF using pdfplumber
-                text_pdfplumber = extract_first_twenty_chars_from_pdf(path)
+                text_pdfplumber = extract_first_twenty_chars_from_pdf(pdfs)
                 print("Text extracted from PDF using pdfplumber:")
                 print(text_pdfplumber)
                 if ("invoice" in text_pdfplumber) or ("packing list" in text_pdfplumber):
-                    pdf_docs.append(path)
+                    pdf_docs.append(pdfs)
                 print("\n")
+                msgs.append(f"Text extracted from PDF {pdfs} using pdfplumber: {text_pdfplumber}")
                 
         else:
             print("No PDF attachments found.")
+            return jsonify({"status": "No PDF attachments found."})
 
         # Extract the email body (text written by the sender)
         email_body = extract_email_body(msg)
-        email_body_filename = Path("Documents/email_body.txt")
+        email_body_filename = "Documents/email_body.txt"
         save_text_to_file(email_body, email_body_filename)
         print(f"Email body saved to {email_body_filename}")
 
@@ -385,14 +391,18 @@ def index():
         # Measure time for making FAISS index
         start_faiss_time = time.time()
         print(f"\n The PDF extracted for processing are:")
+        msgs.append("\n The PDF extracted for processing are:")
         for pdf in pdf_docs:
             print(pdf)
+            msgs.append(pdf)
         raw_text = get_pdf_text(pdf_docs)
         text_chunks = get_text_chunks(raw_text)
         get_vector_stores(text_chunks)
         end_faiss_time = time.time()
         faiss_duration = end_faiss_time - start_faiss_time
         print(f"Time taken to create FAISS index: {faiss_duration} seconds")
+        msgs.append(f"Time taken to create FAISS index: {faiss_duration} seconds")
+
 
         # Load the vector stores and embeddings once
         embeddings = GoogleGenerativeAIEmbeddings(model="models/text-embedding-004")
@@ -419,26 +429,28 @@ def index():
 
             # Define a semaphore to limit concurrent requests
             semaphore = asyncio.Semaphore(2)  # Adjust the number of concurrent requests as needed
-
+            
             # Run the async function
-            asyncio.run(fill_fields_in_batches(all_elements, batch_size=246, delay=2, semaphore=semaphore))
+            asyncio.run(fill_fields_in_batches(all_elements, batch_size=246, delay=2, semaphore=semaphore, msgs=msgs))
 
             end_fill_time = time.time()
             fill_duration = end_fill_time - start_fill_time
             # return result.return_response(message=f'Time taken to fill the form: {fill_duration} seconds')
             print(f"Time taken to fill the form: {fill_duration} seconds")
+            return render_template("index.html", messages=msgs)
 
-            time.sleep(10)
+            # time.sleep(10)
+
 
         except Exception as e:
-            # return jsonify({"status": f"An error occurred: {str(e)}"})
             print(f"An error occurred: {e}")
+            return jsonify({"status": f"An error occurred: {str(e)}"})
 
         # finally:
         #     driver.quit()
     else:
-        # return jsonify({"status": "\nNo new job to be created"})
         print("\nNo new job to be created")
+        return jsonify({"status": "\nNo new job to be created"})
 
 @app.route('/save', methods=['POST'])
 def save_user_details():
