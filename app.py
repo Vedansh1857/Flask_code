@@ -45,7 +45,7 @@ def get_db_connection():
         autocommit=True
     )
 
-@app.route('/')
+@app.route('/', methods=['GET'])
 def index():
     def get_pdf_text(pdf_paths):
         def extract_text(pdf):
@@ -232,6 +232,7 @@ def index():
                         # Check if the current field is IEC and update excluded_ids
                         if current_field_id == "IEC" and check_iec_in_database(answer):
                             excluded_ids.extend(["Exporter_Name", "GSTN_ID"])
+
                 elif (line.startswith('*') or line.startswith('**')) and ':**' in line:
                     parts = line.split(':**')
                     if len(parts) == 2:
@@ -243,6 +244,7 @@ def index():
                         # Check if the current field is IEC and update excluded_ids
                         if current_field_id == "IEC" and check_iec_in_database(answer):
                             excluded_ids.extend(["Exporter_Name", "GSTN_ID"])
+                            
                 elif current_field_id:
                     # Handle continuation of the previous answer
                     answer = line.strip()
