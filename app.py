@@ -1,8 +1,6 @@
-from django.shortcuts import HttpResponse
 import os
 from flask import Flask, request, jsonify
 from flask_cors import CORS
-from flask_http_response import success, result, error
 import mysql.connector
 from mysql.connector import Error
 import imaplib
