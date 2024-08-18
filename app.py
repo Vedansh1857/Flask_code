@@ -244,7 +244,7 @@ def index():
                         # Check if the current field is IEC and update excluded_ids
                         if current_field_id == "IEC" and check_iec_in_database(answer):
                             excluded_ids.extend(["Exporter_Name", "GSTN_ID"])
-                            
+
                 elif current_field_id:
                     # Handle continuation of the previous answer
                     answer = line.strip()
@@ -386,7 +386,7 @@ def index():
     if process_based_on_phrase(email_body_filename):
         # Measure time for making FAISS index
         start_faiss_time = time.time()
-        # print(f"\n The PDF extracted for processing are:")
+        print(f"\n The PDF extracted for processing are:")
         for pdf in pdf_docs:
             print(pdf)
         raw_text = get_pdf_text(pdf_docs)
@@ -433,14 +433,14 @@ def index():
             time.sleep(10)
 
         except Exception as e:
-            return jsonify({"status": f"An error occurred: {str(e)}"})
-            # print(f"An error occurred: {e}")
+            # return jsonify({"status": f"An error occurred: {str(e)}"})
+            print(f"An error occurred: {e}")
 
         # finally:
         #     driver.quit()
     else:
-        return jsonify({"status": "\nNo new job to be created"})
-        # print("\nNo new job to be created")
+        # return jsonify({"status": "\nNo new job to be created"})
+        print("\nNo new job to be created")
 
 @app.route('/save', methods=['POST'])
 def save_user_details():
